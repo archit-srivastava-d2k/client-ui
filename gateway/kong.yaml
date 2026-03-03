@@ -1,0 +1,41 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  # Auth routes: /api/auth/login, /api/auth/self, /api/auth/logout, /api/auth/refresh, /api/auth/register
+  # Kong strips /api/auth → appends to service base path /auth → sends /auth/login etc.
+  - name: auth-service
+    url: http://host.docker.internal:5501/auth
+    routes:
+      - name: auth-route
+        paths:
+          - /api/auth
+        strip_path: true
+
+  # User routes: /api/auth/users/* → auth service /users/*
+  # More specific than /api/auth so it takes priority
+  - name: users-service
+    url: http://host.docker.internal:5501/users
+    routes:
+      - name: users-route
+        paths:
+          - /api/auth/users
+        strip_path: true
+
+  # Tenant routes: /api/auth/tenants/* → auth service /tenants/*
+  - name: tenants-service
+    url: http://host.docker.internal:5501/tenants
+    routes:
+      - name: tenants-route
+        paths:
+          - /api/auth/tenants
+        strip_path: true
+
+  # Catalog service routes: /api/catalog/* → catalog service
+  - name: catalog-service
+    url: http://host.docker.internal:5502
+    routes:
+      - name: catalog-route
+        paths:
+          - /api/catalog
+        strip_path: true
